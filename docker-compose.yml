@@ -1,0 +1,16 @@
+services:
+  db:
+    image: postgres:17
+    environment:
+      POSTGRES_DB: tutor_db
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    ports:
+      # 127.0.0.1 — the database is reachable only from this computer, not from the network
+      - "127.0.0.1:5432:5432"
+    volumes:
+      # data lives in a named volume, so it survives container restarts
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:

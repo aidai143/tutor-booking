@@ -1,0 +1,6 @@
+CREATE TABLE IF NOT EXISTS students (
+    id    SERIAL PRIMARY KEY,
+    name  VARCHAR(100) NOT NULL,
+    phone VARCHAR(20)  NOT NULL UNIQUE,
+    grade INT          NOT NULL CHECK (grade BETWEEN 1 AND 11)
+);
