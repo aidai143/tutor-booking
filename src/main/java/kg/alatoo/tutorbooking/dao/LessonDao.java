@@ -14,6 +14,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -133,6 +134,30 @@ public class LessonDao {
             return report;
         } catch (SQLException e) {
             throw new DatabaseException("Не удалось построить отчёт", e);
+        }
+    }
+
+    /**
+     * One query, three aggregates. "Today" means from 00:00 of the given day to 00:00 of the next one;
+     * cancelled lessons are not counted for today, revenue counts only lessons that took place.
+     */
+    public LessonSummary summary(LocalDate day) {
+        String sql = """
+                SELECT COUNT(CASE WHEN starts_at >= ? AND starts_at < ? AND status <> 'CANCELLED' THEN 1 END) AS today_lessons,
+                       COUNT(CASE WHEN status = 'DONE' THEN 1 END)                                          AS done_lessons,
+                       COALESCE(SUM(CASE WHEN status = 'DONE' THEN price_som END), 0)                       AS revenue_som
+                FROM lessons
+                """;
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setTimestamp(1, Timestamp.valueOf(day.atStartOfDay()));
+            statement.setTimestamp(2, Timestamp.valueOf(day.plusDays(1).atStartOfDay()));
+            try (ResultSet rows = statement.executeQuery()) {
+                rows.next();
+                return new LessonSummary(rows.getInt("today_lessons"), rows.getInt("done_lessons"), rows.getInt("revenue_som"));
+            }
+        } catch (SQLException e) {
+            throw new DatabaseException("Не удалось посчитать сводку", e);
         }
     }
 

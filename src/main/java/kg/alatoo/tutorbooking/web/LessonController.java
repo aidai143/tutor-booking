@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.time.LocalDate;
+
 @Controller
 public class LessonController {
 
@@ -41,6 +43,7 @@ public class LessonController {
     @GetMapping("/lessons")
     public String list(@RequestParam(required = false) String q, Model model) {
         model.addAttribute("lessons", lessonDao.findAll(q));
+        model.addAttribute("summary", lessonDao.summary(LocalDate.now()));
         model.addAttribute("q", q);
         model.addAttribute("students", studentDao.findAll());
         model.addAttribute("tutors", tutorDao.findAll());

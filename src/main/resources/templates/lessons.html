@@ -9,13 +9,32 @@
         <div class="toolbar">
             <h1>Занятия</h1>
             <form class="search" method="get" th:action="@{/lessons}" role="search">
-                <svg th:replace="~{fragments :: icon-search}"></svg>
+                <svg th:replace="~{fragments :: icon('search')}"></svg>
                 <input name="q" th:value="${q}" placeholder="Поиск по ученику" aria-label="Поиск по имени ученика">
                 <a class="search-reset" th:if="${q}" th:href="@{/lessons}">Сбросить</a>
             </form>
         </div>
 
         <div th:replace="~{fragments :: messages}"></div>
+
+        <section class="stats" aria-label="Сводка">
+            <div class="stat stat-violet">
+                <svg th:replace="~{fragments :: icon('calendar-check')}"></svg>
+                <b class="mono" th:text="${summary.todayLessons}">0</b><span>Занятий сегодня</span>
+            </div>
+            <div class="stat stat-blue">
+                <svg th:replace="~{fragments :: icon('users')}"></svg>
+                <b class="mono" th:text="${#lists.size(students)}">0</b><span>Учеников</span>
+            </div>
+            <div class="stat stat-green">
+                <svg th:replace="~{fragments :: icon('circle-check')}"></svg>
+                <b class="mono" th:text="${summary.doneLessons}">0</b><span>Проведено занятий</span>
+            </div>
+            <div class="stat stat-amber">
+                <svg th:replace="~{fragments :: icon('wallet')}"></svg>
+                <b class="mono" th:text="${#numbers.formatInteger(summary.revenueSom, 1, 'WHITESPACE')}">0</b><span>Выручка, сом</span>
+            </div>
+        </section>
 
         <p class="hint" th:if="${#lists.isEmpty(students) or #lists.isEmpty(tutors) or #lists.isEmpty(subjects)}">
             Чтобы записать на занятие, сначала добавьте хотя бы одного <a th:href="@{/students}">ученика</a>,
