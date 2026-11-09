@@ -15,12 +15,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-
 @Controller
 public class LessonController {
 
@@ -46,13 +40,7 @@ public class LessonController {
 
     @GetMapping("/lessons")
     public String list(@RequestParam(required = false) String q, Model model) {
-        // Lessons come sorted by time; group them by day for the "diary" view
-        Map<LocalDate, List<Lesson>> lessonsByDay = new LinkedHashMap<>();
-        for (Lesson lesson : lessonDao.findAll(q)) {
-            lessonsByDay.computeIfAbsent(lesson.getStartsAt().toLocalDate(), day -> new ArrayList<>()).add(lesson);
-        }
-        model.addAttribute("lessonsByDay", lessonsByDay);
-        model.addAttribute("today", LocalDate.now());
+        model.addAttribute("lessons", lessonDao.findAll(q));
         model.addAttribute("q", q);
         model.addAttribute("students", studentDao.findAll());
         model.addAttribute("tutors", tutorDao.findAll());

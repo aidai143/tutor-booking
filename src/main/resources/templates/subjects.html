@@ -6,34 +6,31 @@
     <aside th:replace="~{fragments :: side('subjects')}"></aside>
 
     <main class="main">
-        <div class="page-head"><h1>Предметы</h1></div>
+        <div class="toolbar"><h1>Предметы</h1></div>
         <div th:replace="~{fragments :: messages}"></div>
 
-        <div class="layout">
-            <section aria-label="Список предметов">
-                <p class="empty" th:if="${#lists.isEmpty(subjects)}">Предметов пока нет.</p>
-                <div class="table-wrap" th:unless="${#lists.isEmpty(subjects)}">
-                    <table>
-                        <thead><tr><th>Название</th><th></th></tr></thead>
-                        <tbody>
-                        <tr th:each="s : ${subjects}">
-                            <td th:text="${s.name}">математика</td>
-                            <td class="act">
-                                <form method="post" th:action="@{/subjects/{id}/delete(id=${s.id})}">
-                                    <button class="btn btn-quiet btn-danger" type="submit">Удалить</button>
-                                </form>
-                            </td>
-                        </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </section>
-
-            <form class="card" method="post" th:action="@{/subjects}">
-                <h2 class="card-title">Новый предмет</h2>
+        <details class="new" th:open="${#lists.isEmpty(subjects)}">
+            <summary class="btn btn-primary">Новый предмет</summary>
+            <form class="new-form" method="post" th:action="@{/subjects}">
                 <label class="field">Название <input name="name" maxlength="100" required></label>
-                <button class="btn btn-primary" type="submit">Добавить</button>
+                <div class="new-actions"><button class="btn btn-primary" type="submit">Добавить</button></div>
             </form>
+        </details>
+
+        <p class="empty" th:if="${#lists.isEmpty(subjects)}">Предметов пока нет.</p>
+        <div class="list" role="table" aria-label="Предметы" th:unless="${#lists.isEmpty(subjects)}">
+            <div class="row row-head cols-subjects" role="row">
+                <span role="columnheader">Название</span>
+                <span role="columnheader"></span>
+            </div>
+            <div class="row cols-subjects" role="row" th:each="s : ${subjects}">
+                <span role="cell" th:text="${s.name}">математика</span>
+                <span role="cell" class="acts">
+                    <form method="post" th:action="@{/subjects/{id}/delete(id=${s.id})}">
+                        <button class="btn btn-ghost btn-danger" type="submit">Удалить</button>
+                    </form>
+                </span>
+            </div>
         </div>
     </main>
 </div>

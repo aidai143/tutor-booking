@@ -6,21 +6,21 @@
     <aside th:replace="~{fragments :: side('report')}"></aside>
 
     <main class="main">
-        <div class="page-head"><h1>Отчёт по репетиторам</h1></div>
+        <div class="toolbar"><h1>Отчёт по репетиторам</h1></div>
         <p class="hint">Считаются только проведённые занятия. Репетиторы без занятий тоже в списке.</p>
 
         <p class="empty" th:if="${#lists.isEmpty(rows)}">Репетиторов пока нет.</p>
-        <div class="table-wrap" th:unless="${#lists.isEmpty(rows)}">
-            <table>
-                <thead><tr><th>Репетитор</th><th class="num">Проведено занятий</th><th class="num">К оплате</th></tr></thead>
-                <tbody>
-                <tr th:each="r : ${rows}">
-                    <td th:text="${r.tutorName}">Гульмира</td>
-                    <td class="num" th:text="${r.doneLessons}">3</td>
-                    <td class="num" th:text="${r.earnedSom} + ' сом'">3000 сом</td>
-                </tr>
-                </tbody>
-            </table>
+        <div class="list" role="table" aria-label="Отчёт" th:unless="${#lists.isEmpty(rows)}">
+            <div class="row row-head cols-report" role="row">
+                <span role="columnheader">Репетитор</span>
+                <span role="columnheader" class="num">Проведено</span>
+                <span role="columnheader" class="num">К оплате</span>
+            </div>
+            <div class="row cols-report" role="row" th:each="r : ${rows}">
+                <span role="cell" th:text="${r.tutorName}">Гульмира</span>
+                <span role="cell" class="mono num" th:text="${r.doneLessons}">3</span>
+                <span role="cell" class="mono num" th:text="${r.earnedSom} + ' сом'">3000 сом</span>
+            </div>
         </div>
     </main>
 </div>

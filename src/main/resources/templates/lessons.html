@@ -1,107 +1,96 @@
 <!DOCTYPE html>
 <html lang="ru" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments :: head('Расписание')}"></head>
+<head th:replace="~{fragments :: head('Занятия')}"></head>
 <body>
 <div class="app">
     <aside th:replace="~{fragments :: side('lessons')}"></aside>
 
     <main class="main">
-        <div class="page-head">
-            <h1>Расписание</h1>
+        <div class="toolbar">
+            <h1>Занятия</h1>
             <form class="search" method="get" th:action="@{/lessons}" role="search">
                 <svg th:replace="~{fragments :: icon-search}"></svg>
-                <input name="q" th:value="${q}" placeholder="Найти ученика" aria-label="Поиск по имени ученика">
+                <input name="q" th:value="${q}" placeholder="Поиск по ученику" aria-label="Поиск по имени ученика">
                 <a class="search-reset" th:if="${q}" th:href="@{/lessons}">Сбросить</a>
             </form>
-            <a class="btn btn-primary jump" href="#new-lesson">Новая запись</a>
         </div>
 
         <div th:replace="~{fragments :: messages}"></div>
 
-        <div class="layout">
-            <section aria-label="Занятия по дням">
-                <p class="empty" th:if="${#maps.isEmpty(lessonsByDay)}"
-                   th:text="${q} ? 'Ничего не найдено.' : 'Занятий пока нет. Запишите первое через форму «Новая запись».'">Занятий пока нет.</p>
+        <p class="hint" th:if="${#lists.isEmpty(students) or #lists.isEmpty(tutors) or #lists.isEmpty(subjects)}">
+            Чтобы записать на занятие, сначала добавьте хотя бы одного <a th:href="@{/students}">ученика</a>,
+            <a th:href="@{/tutors}">репетитора</a> и <a th:href="@{/subjects}">предмет</a>.</p>
 
-                <div class="day" th:each="entry : ${lessonsByDay}">
-                    <h2 class="day-title">
-                        <span th:text="${#strings.capitalize(#temporals.format(entry.key, 'EEEE'))}">Пятница</span>
-                        <span class="day-date" th:text="${#temporals.format(entry.key, 'd MMMM yyyy')}">13 ноября 2026</span>
-                        <span class="today" th:if="${entry.key == today}">сегодня</span>
-                    </h2>
+        <details class="new" th:unless="${#lists.isEmpty(students) or #lists.isEmpty(tutors) or #lists.isEmpty(subjects)}"
+                 th:open="${#lists.isEmpty(lessons) and q == null}">
+            <summary class="btn btn-primary">Новая запись</summary>
+            <form class="new-form" method="post" th:action="@{/lessons}">
+                <label class="field">Ученик
+                    <select name="studentId" required>
+                        <option th:each="s : ${students}" th:value="${s.id}" th:text="${s.name + ', ' + s.grade + ' класс'}"></option>
+                    </select>
+                </label>
+                <label class="field">Репетитор
+                    <select name="tutorId" required>
+                        <option th:each="t : ${tutors}" th:value="${t.id}" th:text="${t}"></option>
+                    </select>
+                </label>
+                <label class="field">Предмет
+                    <select name="subjectId" required>
+                        <option th:each="s : ${subjects}" th:value="${s.id}" th:text="${s.name}"></option>
+                    </select>
+                </label>
+                <label class="field">Дата и время <input name="startsAt" type="datetime-local" required></label>
+                <label class="field">Формат
+                    <select name="type">
+                        <option value="ONLINE">Онлайн</option>
+                        <option value="OFFLINE">Офлайн, +200 сом</option>
+                    </select>
+                </label>
+                <label class="field">Ссылка (онлайн) или адрес (офлайн) <input name="location" maxlength="200" required></label>
+                <div class="new-actions"><button class="btn btn-primary" type="submit">Записать</button></div>
+            </form>
+        </details>
 
-                    <ol class="slots">
-                        <li class="slot" th:each="l : ${entry.value}" th:classappend="${'is-' + l.status.name().toLowerCase()}">
-                            <time class="slot-time" th:datetime="${l.startsAt}"
-                                  th:text="${#temporals.format(l.startsAt, 'HH:mm')}">15:00</time>
-                            <div class="slot-main">
-                                <p class="slot-who">
-                                    <span th:text="${l.student.name}">Айдай Жуманазарова</span>
-                                    <span class="muted">·</span>
-                                    <span th:text="${l.subject.name}">английский</span>
-                                </p>
-                                <p class="slot-meta" th:title="${l.location}">
-                                    <span th:text="${l.tutor.name}">Гульмира</span>
-                                    <span class="muted">·</span>
-                                    <span th:text="${l.typeTitle}">Онлайн</span>
-                                    <span class="muted">·</span>
-                                    <span th:text="${l.location}">meet.google.com</span>
-                                </p>
-                            </div>
-                            <div class="slot-side">
-                                <span class="slot-price" th:text="${l.priceSom} + ' сом'">1000 сом</span>
-                                <span class="status" th:classappend="${'status-' + l.status.name().toLowerCase()}"
-                                      th:text="${l.status.title}">Запланировано</span>
-                            </div>
-                            <div class="slot-actions" th:if="${l.status.name() == 'BOOKED'}">
-                                <form method="post" th:action="@{/lessons/{id}/done(id=${l.id})}">
-                                    <button class="btn btn-quiet" type="submit">Проведено</button>
-                                </form>
-                                <form method="post" th:action="@{/lessons/{id}/cancel(id=${l.id})}">
-                                    <button class="btn btn-quiet btn-danger" type="submit">Отменить</button>
-                                </form>
-                            </div>
-                        </li>
-                    </ol>
-                </div>
-            </section>
+        <p class="empty" th:if="${#lists.isEmpty(lessons)}" th:text="${q} ? 'Ничего не найдено.' : 'Занятий пока нет.'">Занятий пока нет.</p>
 
-            <aside id="new-lesson" aria-label="Новая запись">
-                <div class="card" th:if="${#lists.isEmpty(students) or #lists.isEmpty(tutors) or #lists.isEmpty(subjects)}">
-                    <h2 class="card-title">Новая запись</h2>
-                    <p class="hint">Сначала добавьте хотя бы одного <a th:href="@{/students}">ученика</a>,
-                        <a th:href="@{/tutors}">репетитора</a> и <a th:href="@{/subjects}">предмет</a>.</p>
-                </div>
-
-                <form class="card" method="post" th:action="@{/lessons}"
-                      th:unless="${#lists.isEmpty(students) or #lists.isEmpty(tutors) or #lists.isEmpty(subjects)}">
-                    <h2 class="card-title">Новая запись</h2>
-                    <label class="field">Ученик
-                        <select name="studentId" required>
-                            <option th:each="s : ${students}" th:value="${s.id}" th:text="${s.name + ', ' + s.grade + ' класс'}"></option>
-                        </select>
-                    </label>
-                    <label class="field">Репетитор
-                        <select name="tutorId" required>
-                            <option th:each="t : ${tutors}" th:value="${t.id}" th:text="${t}"></option>
-                        </select>
-                    </label>
-                    <label class="field">Предмет
-                        <select name="subjectId" required>
-                            <option th:each="s : ${subjects}" th:value="${s.id}" th:text="${s.name}"></option>
-                        </select>
-                    </label>
-                    <label class="field">Дата и время <input name="startsAt" type="datetime-local" required></label>
-                    <div class="segmented" role="radiogroup" aria-label="Формат занятия">
-                        <label><input type="radio" name="type" value="ONLINE" checked><span>Онлайн</span></label>
-                        <label><input type="radio" name="type" value="OFFLINE"><span>Офлайн +200 сом</span></label>
-                    </div>
-                    <label class="field">Ссылка (онлайн) или адрес (офлайн)
-                        <input name="location" maxlength="200" required>
-                    </label>
-                    <button class="btn btn-primary" type="submit">Записать</button>
-                </form>
-            </aside>
+        <div class="list list-scroll" role="table" aria-label="Занятия" th:unless="${#lists.isEmpty(lessons)}">
+            <div class="row row-head cols-lessons" role="row">
+                <span role="columnheader">Когда</span>
+                <span role="columnheader">Ученик и предмет</span>
+                <span role="columnheader">Репетитор</span>
+                <span role="columnheader">Формат</span>
+                <span role="columnheader" class="num">Цена</span>
+                <span role="columnheader">Статус</span>
+                <span role="columnheader"></span>
+            </div>
+            <div class="row cols-lessons" role="row" th:each="l : ${lessons}" th:classappend="${'is-' + l.status.name().toLowerCase()}">
+                <span role="cell" class="mono when">
+                    <span th:text="${#temporals.format(l.startsAt, 'd MMM')}">13 нояб.</span>
+                    <b th:text="${#temporals.format(l.startsAt, 'HH:mm')}">15:00</b>
+                </span>
+                <span role="cell" class="who">
+                    <span th:text="${l.student.name}">Айдай Жуманазарова</span>
+                    <small th:text="${l.subject.name}">английский</small>
+                </span>
+                <span role="cell" th:text="${l.tutor.name}">Гульмира</span>
+                <span role="cell" class="fmt" th:title="${l.location}">
+                    <span th:text="${l.typeTitle}">Онлайн</span>
+                    <small th:text="${l.location}">meet.google.com</small>
+                </span>
+                <span role="cell" class="mono num" th:text="${l.priceSom} + ' сом'">1000 сом</span>
+                <span role="cell"><span class="status"><i class="dot" aria-hidden="true"></i><span th:text="${l.status.title}">Запланировано</span></span></span>
+                <span role="cell" class="acts">
+                    <th:block th:if="${l.status.name() == 'BOOKED'}">
+                        <form method="post" th:action="@{/lessons/{id}/done(id=${l.id})}">
+                            <button class="btn btn-ghost" type="submit">Проведено</button>
+                        </form>
+                        <form method="post" th:action="@{/lessons/{id}/cancel(id=${l.id})}">
+                            <button class="btn btn-ghost btn-danger" type="submit">Отменить</button>
+                        </form>
+                    </th:block>
+                </span>
+            </div>
         </div>
     </main>
 </div>

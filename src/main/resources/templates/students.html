@@ -6,38 +6,37 @@
     <aside th:replace="~{fragments :: side('students')}"></aside>
 
     <main class="main">
-        <div class="page-head"><h1>Ученики</h1></div>
+        <div class="toolbar"><h1>Ученики</h1></div>
         <div th:replace="~{fragments :: messages}"></div>
 
-        <div class="layout">
-            <section aria-label="Список учеников">
-                <p class="empty" th:if="${#lists.isEmpty(students)}">Учеников пока нет.</p>
-                <div class="table-wrap" th:unless="${#lists.isEmpty(students)}">
-                    <table>
-                        <thead><tr><th>Имя</th><th>Телефон</th><th class="num">Класс</th><th></th></tr></thead>
-                        <tbody>
-                        <tr th:each="s : ${students}">
-                            <td th:text="${s.name}">Айдай Жуманазарова</td>
-                            <td th:text="${s.phone}">+996700123456</td>
-                            <td class="num" th:text="${s.grade}">9</td>
-                            <td class="act">
-                                <form method="post" th:action="@{/students/{id}/delete(id=${s.id})}">
-                                    <button class="btn btn-quiet btn-danger" type="submit">Удалить</button>
-                                </form>
-                            </td>
-                        </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </section>
-
-            <form class="card" method="post" th:action="@{/students}">
-                <h2 class="card-title">Новый ученик</h2>
+        <details class="new" th:open="${#lists.isEmpty(students)}">
+            <summary class="btn btn-primary">Новый ученик</summary>
+            <form class="new-form" method="post" th:action="@{/students}">
                 <label class="field">Имя <input name="name" maxlength="100" required></label>
                 <label class="field">Телефон <input name="phone" maxlength="20" placeholder="+996700123456" required></label>
                 <label class="field">Класс <input name="grade" type="number" min="1" max="11" required></label>
-                <button class="btn btn-primary" type="submit">Добавить</button>
+                <div class="new-actions"><button class="btn btn-primary" type="submit">Добавить</button></div>
             </form>
+        </details>
+
+        <p class="empty" th:if="${#lists.isEmpty(students)}">Учеников пока нет.</p>
+        <div class="list" role="table" aria-label="Ученики" th:unless="${#lists.isEmpty(students)}">
+            <div class="row row-head cols-people" role="row">
+                <span role="columnheader">Имя</span>
+                <span role="columnheader">Телефон</span>
+                <span role="columnheader" class="num">Класс</span>
+                <span role="columnheader"></span>
+            </div>
+            <div class="row cols-people" role="row" th:each="s : ${students}">
+                <span role="cell" th:text="${s.name}">Айдай Жуманазарова</span>
+                <span role="cell" class="mono" th:text="${s.phone}">+996700123456</span>
+                <span role="cell" class="mono num" th:text="${s.grade} + ' класс'">11 класс</span>
+                <span role="cell" class="acts">
+                    <form method="post" th:action="@{/students/{id}/delete(id=${s.id})}">
+                        <button class="btn btn-ghost btn-danger" type="submit">Удалить</button>
+                    </form>
+                </span>
+            </div>
         </div>
     </main>
 </div>
