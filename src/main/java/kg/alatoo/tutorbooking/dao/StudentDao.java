@@ -58,6 +58,18 @@ public class StudentDao {
         }
     }
 
+    public void deleteById(int id) {
+        String sql = "DELETE FROM students WHERE id = ?";
+        try(Connection connection = dataSource.getConnection();
+        PreparedStatement statement = connection.prepareStatement(sql)){
+            statement.setInt(1,id);
+            statement.executeUpdate();
+
+        } catch (SQLException e) {
+            throw new DatabaseException("Не удалось удалить ученика", e);
+        }
+    }
+
     private Student toStudent(ResultSet row) throws SQLException {
         Student student = new Student(row.getString("name"), row.getString("phone"), row.getInt("grade"));
         student.setId(row.getInt("id"));
