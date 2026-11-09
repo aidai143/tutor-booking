@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head('Изменить занятие')}"></head>
+<body>
+<div class="app">
+    <aside th:replace="~{fragments :: side('lessons')}"></aside>
+
+    <main class="main">
+        <a class="back" th:href="@{/lessons}">← К занятиям</a>
+        <div class="toolbar"><h1>Изменить занятие</h1></div>
+        <p class="hint">Сейчас: <span th:text="${#temporals.format(lesson.startsAt, 'd MMMM, HH:mm')}">10 ноября, 18:00</span>,
+            <span th:text="${lesson.student.name}">Нурайым</span>, <span th:text="${lesson.priceSom} + ' сом'">400 сом</span>.
+            Цена посчитается заново.</p>
+
+        <div th:replace="~{fragments :: messages}"></div>
+
+        <form class="new-form" method="post" th:action="@{/lessons/{id}/edit(id=${lesson.id})}">
+            <label class="field">Ученик
+                <select name="studentId" required>
+                    <option th:each="s : ${students}" th:value="${s.id}" th:text="${s.name + ', ' + s.grade + ' класс'}"
+                            th:selected="${s.id == lesson.student.id}"></option>
+                </select>
+            </label>
+            <label class="field">Репетитор
+                <select name="tutorId" required>
+                    <option th:each="t : ${tutors}" th:value="${t.id}" th:text="${t}"
+                            th:selected="${t.id == lesson.tutor.id}"></option>
+                </select>
+            </label>
+            <label class="field">Предмет
+                <select name="subjectId" required>
+                    <option th:each="s : ${subjects}" th:value="${s.id}" th:text="${s.name}"
+                            th:selected="${s.id == lesson.subject.id}"></option>
+                </select>
+            </label>
+            <label class="field">Дата и время
+                <input name="startsAt" type="datetime-local" required
+                       th:value="${#temporals.format(lesson.startsAt, 'yyyy-MM-dd''T''HH:mm')}">
+            </label>
+            <label class="field">Формат
+                <select name="type">
+                    <option value="ONLINE" th:selected="${lesson.type == 'ONLINE'}">Онлайн</option>
+                    <option value="OFFLINE" th:selected="${lesson.type == 'OFFLINE'}">Офлайн, +200 сом</option>
+                </select>
+            </label>
+            <label class="field">Ссылка (онлайн) или адрес (офлайн)
+                <input name="location" maxlength="200" required th:value="${lesson.location}">
+            </label>
+            <div class="new-actions">
+                <button class="btn btn-primary" type="submit">Сохранить</button>
+                <a class="btn btn-secondary" th:href="@{/lessons}">Отмена</a>
+            </div>
+        </form>
+    </main>
+</div>
+</body>
+</html>

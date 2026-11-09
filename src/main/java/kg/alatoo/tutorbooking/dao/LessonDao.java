@@ -18,6 +18,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public class LessonDao {
@@ -40,16 +41,40 @@ public class LessonDao {
         this.dataSource = dataSource;
     }
 
-    /** All lessons; if studentName is not blank, only lessons of students whose name contains it. */
-    public List<Lesson> findAll(String studentName) {
-        boolean search = studentName != null && !studentName.isBlank();
+    /**
+     * Lessons that match the filter. The WHERE part is built only from the filters that were chosen;
+     * values never go into the SQL text, they are passed as "?" parameters (no SQL injection).
+     */
+    public List<Lesson> findAll(LessonFilter filter) {
+        List<String> conditions = new ArrayList<>();
+        List<Object> values = new ArrayList<>();
+        if (filter.studentName() != null && !filter.studentName().isBlank()) {
+            conditions.add("s.name ILIKE ?");
+            values.add("%" + filter.studentName().trim() + "%");
+        }
+        if (filter.tutorId() != null) {
+            conditions.add("l.tutor_id = ?");
+            values.add(filter.tutorId());
+        }
+        if (filter.status() != null) {
+            conditions.add("l.status = ?");
+            values.add(filter.status().name());
+        }
+        if (filter.from() != null) {
+            conditions.add("l.starts_at >= ?");
+            values.add(Timestamp.valueOf(filter.from().atStartOfDay()));
+        }
+        if (filter.to() != null) {
+            conditions.add("l.starts_at < ?");
+            values.add(Timestamp.valueOf(filter.to().plusDays(1).atStartOfDay()));
+        }
         String sql = SELECT_WITH_JOINS
-                + (search ? " WHERE s.name ILIKE ?" : "")
+                + (conditions.isEmpty() ? "" : " WHERE " + String.join(" AND ", conditions))
                 + " ORDER BY l.starts_at";
         try (Connection connection = dataSource.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
-            if (search) {
-                statement.setString(1, "%" + studentName.trim() + "%");
+            for (int i = 0; i < values.size(); i++) {
+                statement.setObject(i + 1, values.get(i));
             }
             try (ResultSet rows = statement.executeQuery()) {
                 List<Lesson> lessons = new ArrayList<>();
@@ -60,6 +85,18 @@ public class LessonDao {
             }
         } catch (SQLException e) {
             throw new DatabaseException("Не удалось загрузить занятия", e);
+        }
+    }
+
+    public Optional<Lesson> findById(int id) {
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement statement = connection.prepareStatement(SELECT_WITH_JOINS + " WHERE l.id = ?")) {
+            statement.setInt(1, id);
+            try (ResultSet rows = statement.executeQuery()) {
+                return rows.next() ? Optional.of(toLesson(rows)) : Optional.empty();
+            }
+        } catch (SQLException e) {
+            throw new DatabaseException("Не удалось загрузить занятие", e);
         }
     }
 
@@ -89,6 +126,32 @@ public class LessonDao {
         }
     }
 
+    /**
+     * Saves new time, people, format and price of a lesson that is still BOOKED
+     * (a done or cancelled lesson is history and is not changed). Returns false if nothing was updated.
+     */
+    public boolean update(Lesson lesson) {
+        String sql = """
+                UPDATE lessons
+                SET student_id = ?, tutor_id = ?, subject_id = ?, starts_at = ?, type = ?, location = ?, price_som = ?
+                WHERE id = ? AND status = 'BOOKED'
+                """;
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setInt(1, lesson.getStudent().getId());
+            statement.setInt(2, lesson.getTutor().getId());
+            statement.setInt(3, lesson.getSubject().getId());
+            statement.setTimestamp(4, Timestamp.valueOf(lesson.getStartsAt()));
+            statement.setString(5, lesson.getType());
+            statement.setString(6, lesson.getLocation());
+            statement.setInt(7, lesson.getPriceSom());
+            statement.setInt(8, lesson.getId());
+            return statement.executeUpdate() == 1;
+        } catch (SQLException e) {
+            throw new DatabaseException("Не удалось изменить занятие", e);
+        }
+    }
+
     /** Changes the status of a BOOKED lesson. Returns false if there is no such BOOKED lesson. */
     public boolean updateBookedStatus(int lessonId, LessonStatus status) {
         String sql = "UPDATE lessons SET status = ? WHERE id = ? AND status = 'BOOKED'";
@@ -102,15 +165,21 @@ public class LessonDao {
         }
     }
 
-    public boolean tutorIsBusy(int tutorId, LocalDateTime startsAt) {
-        return hasOverlap("SELECT COUNT(*) FROM lessons WHERE tutor_id = ?"
-                + " AND status <> 'CANCELLED' AND starts_at > ? AND starts_at < ?", tutorId, startsAt);
+    /**
+     * excludeLessonId: the lesson being moved must not conflict with itself.
+     * For a new lesson pass NO_LESSON (0): ids start from 1, so nothing is excluded.
+     */
+    public boolean tutorIsBusy(int tutorId, LocalDateTime startsAt, int excludeLessonId) {
+        return hasOverlap("SELECT COUNT(*) FROM lessons WHERE tutor_id = ? AND id <> ?"
+                + " AND status <> 'CANCELLED' AND starts_at > ? AND starts_at < ?", tutorId, excludeLessonId, startsAt);
     }
 
-    public boolean studentIsBusy(int studentId, LocalDateTime startsAt) {
-        return hasOverlap("SELECT COUNT(*) FROM lessons WHERE student_id = ?"
-                + " AND status <> 'CANCELLED' AND starts_at > ? AND starts_at < ?", studentId, startsAt);
+    public boolean studentIsBusy(int studentId, LocalDateTime startsAt, int excludeLessonId) {
+        return hasOverlap("SELECT COUNT(*) FROM lessons WHERE student_id = ? AND id <> ?"
+                + " AND status <> 'CANCELLED' AND starts_at > ? AND starts_at < ?", studentId, excludeLessonId, startsAt);
     }
+
+    public static final int NO_LESSON = 0;
 
     /** Report: for every tutor (even with no lessons) — how many lessons are done and how much they earned. */
     public List<TutorReportRow> tutorReport() {
@@ -162,12 +231,13 @@ public class LessonDao {
     }
 
     // Two lessons of 60 minutes overlap if their starts are less than 60 minutes apart
-    private boolean hasOverlap(String sql, int personId, LocalDateTime startsAt) {
+    private boolean hasOverlap(String sql, int personId, int excludeLessonId, LocalDateTime startsAt) {
         try (Connection connection = dataSource.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setInt(1, personId);
-            statement.setTimestamp(2, Timestamp.valueOf(startsAt.minusMinutes(Lesson.DURATION_MINUTES)));
-            statement.setTimestamp(3, Timestamp.valueOf(startsAt.plusMinutes(Lesson.DURATION_MINUTES)));
+            statement.setInt(2, excludeLessonId);
+            statement.setTimestamp(3, Timestamp.valueOf(startsAt.minusMinutes(Lesson.DURATION_MINUTES)));
+            statement.setTimestamp(4, Timestamp.valueOf(startsAt.plusMinutes(Lesson.DURATION_MINUTES)));
             try (ResultSet rows = statement.executeQuery()) {
                 rows.next();
                 return rows.getInt(1) > 0;

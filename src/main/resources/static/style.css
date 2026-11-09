@@ -107,6 +107,15 @@ input:focus-visible, select:focus-visible, .btn:focus-visible, summary:focus-vis
 .btn-ghost { background: var(--surface); color: var(--ink-2); border-color: var(--line-strong); min-height: 32px; padding: 4px 12px; font-size: 13px; }
 .btn-ghost:hover { background: var(--bg); color: var(--ink); }
 .btn-danger { color: var(--danger); }
+.btn-secondary { background: var(--surface); color: var(--ink); border-color: var(--line-strong); }
+.btn-secondary:hover { background: var(--bg); }
+.btn-icon { padding: 0; width: 32px; justify-content: center; }
+.back { display: inline-block; margin-bottom: var(--s1); font-size: 14px; color: var(--ink-2); text-decoration: none; }
+.back:hover { color: var(--accent-ink); }
+
+/* Filters above the lesson list */
+.filters { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)) auto; gap: 12px; align-items: end; margin-bottom: var(--s3); }
+.filter-actions { display: flex; align-items: center; gap: 12px; min-height: 42px; }
 
 /* "New ..." form behind a button: <details> works without JavaScript */
 .new { margin-bottom: var(--s3); }
@@ -117,7 +126,7 @@ input:focus-visible, select:focus-visible, .btn:focus-visible, summary:focus-vis
 .new-form { margin-top: var(--s2); background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-card); box-shadow: var(--shadow);
     padding: var(--s3); display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--s2); }
 .field { display: grid; gap: 6px; font-size: 13px; color: var(--ink-2); font-weight: 500; }
-.new-actions { grid-column: 1 / -1; }
+.new-actions { grid-column: 1 / -1; display: flex; gap: 12px; flex-wrap: wrap; }
 
 /* ============ Messages ============ */
 .msg { padding: 12px 16px; border-radius: var(--r-control); margin-bottom: var(--s2); font-size: 14px; }
@@ -139,8 +148,8 @@ input:focus-visible, select:focus-visible, .btn:focus-visible, summary:focus-vis
 
 /* Column sets per page */
 /* Every row is its own grid, so all columns need fixed or fr sizes ("auto" would differ per row) */
-/* 112+140+90+110+84+132+180 + 6 gaps x 10 + 2 x 16 padding = 940px: fits a 1280px laptop next to the menu */
-.cols-lessons { grid-template-columns: 112px minmax(140px, 1.4fr) minmax(90px, 1fr) minmax(110px, 1.2fr) 84px 132px 180px; column-gap: 10px; padding-left: 16px; padding-right: 16px; }
+/* 108+130+90+110+80+128+222 + 6 gaps x 10 + 2 x 16 padding = 960px: fits a 1280px laptop next to the menu */
+.cols-lessons { grid-template-columns: 108px minmax(130px, 1.4fr) minmax(90px, 1fr) minmax(110px, 1.2fr) 80px 128px 222px; column-gap: 10px; padding-left: 16px; padding-right: 16px; }
 .cols-people { grid-template-columns: minmax(180px, 2fr) minmax(140px, 1.2fr) 120px 100px; }
 .cols-subjects { grid-template-columns: minmax(0, 1fr) 100px; }
 .cols-report { grid-template-columns: minmax(0, 2fr) 160px 160px; }
@@ -158,9 +167,13 @@ input:focus-visible, select:focus-visible, .btn:focus-visible, summary:focus-vis
 
 /* Between phone and wide laptop the 7 columns may not fit: scroll inside the list, not the page */
 .list-scroll { overflow-x: auto; }
-.list-scroll .cols-lessons { min-width: 940px; }
+.list-scroll .cols-lessons { min-width: 960px; }
 @media (max-width: 1100px) {
     .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .filters { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    /* the browser's date-time field needs ~220px, three columns are too narrow here */
+    .new-form { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .filter-actions { grid-column: 1 / -1; }
 }
 @media (max-width: 860px) {
     .app { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto 1fr; }

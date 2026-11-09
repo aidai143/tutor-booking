@@ -25,10 +25,10 @@ public abstract class Lesson {
             throw new IllegalArgumentException("Нужно указать дату и время занятия");
         }
         if (location == null || location.isBlank()) {
-            throw new IllegalArgumentException(locationHint() + " не может быть пустым");
+            throw new IllegalArgumentException("Поле «" + locationHint() + "» не заполнено");
         }
         if (location.length() > 200) {
-            throw new IllegalArgumentException(locationHint() + " слишком длинный (макс. 200 символов)");
+            throw new IllegalArgumentException("Поле «" + locationHint() + "»: слишком длинно (макс. 200 символов)");
         }
         this.student = student;
         this.tutor = tutor;

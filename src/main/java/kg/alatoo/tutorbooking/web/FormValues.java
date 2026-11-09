@@ -1,5 +1,6 @@
 package kg.alatoo.tutorbooking.web;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
 
@@ -30,6 +31,23 @@ final class FormValues {
         try {
             // <input type="datetime-local"> sends "2026-11-12T15:00"
             return LocalDateTime.parse(value.trim());
+        } catch (DateTimeParseException e) {
+            throw new IllegalArgumentException("Поле «" + fieldTitle + "»: неверный формат даты");
+        }
+    }
+
+    /** Optional filter value: empty means "not chosen" (null). */
+    static Integer parseOptionalInt(String value, String fieldTitle) {
+        return value == null || value.isBlank() ? null : parseInt(value, fieldTitle);
+    }
+
+    /** Optional date from <input type="date"> ("2026-11-12"); empty means "not chosen" (null). */
+    static LocalDate parseOptionalDate(String value, String fieldTitle) {
+        if (value == null || value.isBlank()) {
+            return null;
+        }
+        try {
+            return LocalDate.parse(value.trim());
         } catch (DateTimeParseException e) {
             throw new IllegalArgumentException("Поле «" + fieldTitle + "»: неверный формат даты");
         }

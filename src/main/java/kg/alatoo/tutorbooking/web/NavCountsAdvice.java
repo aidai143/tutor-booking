@@ -2,6 +2,7 @@ package kg.alatoo.tutorbooking.web;
 
 import kg.alatoo.tutorbooking.dao.DatabaseException;
 import kg.alatoo.tutorbooking.dao.LessonDao;
+import kg.alatoo.tutorbooking.dao.LessonFilter;
 import kg.alatoo.tutorbooking.dao.StudentDao;
 import kg.alatoo.tutorbooking.dao.SubjectDao;
 import kg.alatoo.tutorbooking.dao.TutorDao;
@@ -33,7 +34,7 @@ public class NavCountsAdvice {
     public Map<String, Integer> navCounts() {
         try {
             return Map.of(
-                    "lessons", lessonDao.findAll(null).size(),
+                    "lessons", lessonDao.findAll(LessonFilter.none()).size(),
                     "students", studentDao.findAll().size(),
                     "tutors", tutorDao.findAll().size(),
                     "subjects", subjectDao.findAll().size());

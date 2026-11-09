@@ -6,14 +6,38 @@
     <aside th:replace="~{fragments :: side('lessons')}"></aside>
 
     <main class="main">
-        <div class="toolbar">
-            <h1>Занятия</h1>
-            <form class="search" method="get" th:action="@{/lessons}" role="search">
-                <svg th:replace="~{fragments :: icon('search')}"></svg>
-                <input name="q" th:value="${q}" placeholder="Поиск по ученику" aria-label="Поиск по имени ученика">
-                <a class="search-reset" th:if="${q}" th:href="@{/lessons}">Сбросить</a>
-            </form>
-        </div>
+        <!-- One GET form: search and filters work together and stay in the address bar -->
+        <form method="get" th:action="@{/lessons}" role="search">
+            <div class="toolbar">
+                <h1>Занятия</h1>
+                <div class="search">
+                    <svg th:replace="~{fragments :: icon('search')}"></svg>
+                    <input name="q" th:value="${q}" placeholder="Поиск по ученику" aria-label="Поиск по имени ученика">
+                </div>
+            </div>
+            <div class="filters">
+                <label class="field">Репетитор
+                    <select name="tutorId">
+                        <option value="">Все репетиторы</option>
+                        <option th:each="t : ${tutors}" th:value="${t.id}" th:text="${t.name}"
+                                th:selected="${filter.tutorId == t.id}"></option>
+                    </select>
+                </label>
+                <label class="field">Статус
+                    <select name="status">
+                        <option value="">Все статусы</option>
+                        <option th:each="st : ${statuses}" th:value="${st.name()}" th:text="${st.title}"
+                                th:selected="${filter.status == st}"></option>
+                    </select>
+                </label>
+                <label class="field">С даты <input type="date" name="from" th:value="${filter.from}"></label>
+                <label class="field">По дату <input type="date" name="to" th:value="${filter.to}"></label>
+                <div class="filter-actions">
+                    <button class="btn btn-secondary" type="submit">Показать</button>
+                    <a class="search-reset" th:unless="${filter.isEmpty()}" th:href="@{/lessons}">Сбросить</a>
+                </div>
+            </div>
+        </form>
 
         <div th:replace="~{fragments :: messages}"></div>
 
@@ -41,7 +65,7 @@
             <a th:href="@{/tutors}">репетитора</a> и <a th:href="@{/subjects}">предмет</a>.</p>
 
         <details class="new" th:unless="${#lists.isEmpty(students) or #lists.isEmpty(tutors) or #lists.isEmpty(subjects)}"
-                 th:open="${#lists.isEmpty(lessons) and q == null}">
+                 th:open="${#lists.isEmpty(lessons) and filter.isEmpty()}">
             <summary class="btn btn-primary">Новая запись</summary>
             <form class="new-form" method="post" th:action="@{/lessons}">
                 <label class="field">Ученик
@@ -71,7 +95,7 @@
             </form>
         </details>
 
-        <p class="empty" th:if="${#lists.isEmpty(lessons)}" th:text="${q} ? 'Ничего не найдено.' : 'Занятий пока нет.'">Занятий пока нет.</p>
+        <p class="empty" th:if="${#lists.isEmpty(lessons)}" th:text="${filter.isEmpty()} ? 'Занятий пока нет.' : 'Ничего не найдено. Измените фильтры или нажмите «Сбросить».'">Занятий пока нет.</p>
 
         <div class="list list-scroll" role="table" aria-label="Занятия" th:unless="${#lists.isEmpty(lessons)}">
             <div class="row row-head cols-lessons" role="row">
@@ -101,6 +125,8 @@
                 <span role="cell"><span class="status"><i class="dot" aria-hidden="true"></i><span th:text="${l.status.title}">Запланировано</span></span></span>
                 <span role="cell" class="acts">
                     <th:block th:if="${l.status.name() == 'BOOKED'}">
+                        <a class="btn btn-ghost btn-icon" th:href="@{/lessons/{id}/edit(id=${l.id})}"
+                           title="Изменить" aria-label="Изменить занятие"><svg th:replace="~{fragments :: icon('pencil')}"></svg></a>
                         <form method="post" th:action="@{/lessons/{id}/done(id=${l.id})}">
                             <button class="btn btn-ghost" type="submit">Проведено</button>
                         </form>
