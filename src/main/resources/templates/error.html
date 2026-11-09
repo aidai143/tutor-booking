@@ -2,12 +2,14 @@
 <html lang="ru" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{fragments :: head('Ошибка')}"></head>
 <body>
-<header th:replace="~{fragments :: nav('')}"></header>
-<main>
-    <h1>Что-то пошло не так</h1>
-    <p class="msg msg-error" th:text="${status == 404} ? 'Такой страницы нет.' : 'Ошибка на сервере. Проверьте, запущена ли база данных.'">
-        Ошибка на сервере.</p>
-    <p><a th:href="@{/lessons}">Вернуться к занятиям</a></p>
-</main>
+<div class="app">
+    <aside th:replace="~{fragments :: side('')}"></aside>
+
+    <main class="main">
+        <div class="page-head"><h1 th:text="${status == 404} ? 'Такой страницы нет' : 'Что-то пошло не так'">Что-то пошло не так</h1></div>
+        <p class="msg msg-error" th:unless="${status == 404}">Ошибка на сервере. Проверьте, запущена ли база данных.</p>
+        <p><a class="btn btn-primary" th:href="@{/lessons}">К расписанию</a></p>
+    </main>
+</div>
 </body>
 </html>

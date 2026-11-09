@@ -2,38 +2,44 @@
 <html lang="ru" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{fragments :: head('Ученики')}"></head>
 <body>
-<header th:replace="~{fragments :: nav('students')}"></header>
-<main>
-    <h1>Ученики</h1>
-    <div th:replace="~{fragments :: messages}"></div>
+<div class="app">
+    <aside th:replace="~{fragments :: side('students')}"></aside>
 
-    <form class="card form" method="post" th:action="@{/students}">
-        <h2>Добавить ученика</h2>
-        <label>Имя <input name="name" maxlength="100" required></label>
-        <label>Телефон <input name="phone" maxlength="20" placeholder="+996700123456" required></label>
-        <label>Класс <input name="grade" type="number" min="1" max="11" required></label>
-        <button type="submit">Добавить</button>
-    </form>
+    <main class="main">
+        <div class="page-head"><h1>Ученики</h1></div>
+        <div th:replace="~{fragments :: messages}"></div>
 
-    <p class="empty" th:if="${#lists.isEmpty(students)}">Учеников пока нет.</p>
-    <div class="table-wrap" th:unless="${#lists.isEmpty(students)}">
-        <table>
-            <thead><tr><th>№</th><th>Имя</th><th>Телефон</th><th>Класс</th><th></th></tr></thead>
-            <tbody>
-            <tr th:each="s : ${students}">
-                <td th:text="${s.id}">1</td>
-                <td th:text="${s.name}">Айгерим</td>
-                <td th:text="${s.phone}">+996700123456</td>
-                <td th:text="${s.grade}">9</td>
-                <td>
-                    <form method="post" th:action="@{/students/{id}/delete(id=${s.id})}">
-                        <button class="danger" type="submit">Удалить</button>
-                    </form>
-                </td>
-            </tr>
-            </tbody>
-        </table>
-    </div>
-</main>
+        <div class="layout">
+            <section aria-label="Список учеников">
+                <p class="empty" th:if="${#lists.isEmpty(students)}">Учеников пока нет.</p>
+                <div class="table-wrap" th:unless="${#lists.isEmpty(students)}">
+                    <table>
+                        <thead><tr><th>Имя</th><th>Телефон</th><th class="num">Класс</th><th></th></tr></thead>
+                        <tbody>
+                        <tr th:each="s : ${students}">
+                            <td th:text="${s.name}">Айдай Жуманазарова</td>
+                            <td th:text="${s.phone}">+996700123456</td>
+                            <td class="num" th:text="${s.grade}">9</td>
+                            <td class="act">
+                                <form method="post" th:action="@{/students/{id}/delete(id=${s.id})}">
+                                    <button class="btn btn-quiet btn-danger" type="submit">Удалить</button>
+                                </form>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <form class="card" method="post" th:action="@{/students}">
+                <h2 class="card-title">Новый ученик</h2>
+                <label class="field">Имя <input name="name" maxlength="100" required></label>
+                <label class="field">Телефон <input name="phone" maxlength="20" placeholder="+996700123456" required></label>
+                <label class="field">Класс <input name="grade" type="number" min="1" max="11" required></label>
+                <button class="btn btn-primary" type="submit">Добавить</button>
+            </form>
+        </div>
+    </main>
+</div>
 </body>
 </html>

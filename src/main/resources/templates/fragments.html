@@ -4,27 +4,40 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title th:text="${title} + ' — Учебный центр'">Учебный центр</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" th:href="@{/style.css}">
 </head>
 <body>
 
-<header th:fragment="nav(active)" class="topbar">
-    <div class="topbar-inner">
-        <a class="brand" th:href="@{/lessons}">Учебный центр <span class="brand-sub">расписание</span></a>
-        <nav>
-            <a th:href="@{/lessons}" th:classappend="${active == 'lessons'} ? 'active'">Занятия</a>
-            <a th:href="@{/students}" th:classappend="${active == 'students'} ? 'active'">Ученики</a>
-            <a th:href="@{/tutors}" th:classappend="${active == 'tutors'} ? 'active'">Репетиторы</a>
-            <a th:href="@{/subjects}" th:classappend="${active == 'subjects'} ? 'active'">Предметы</a>
-            <a th:href="@{/report}" th:classappend="${active == 'report'} ? 'active'">Отчёт</a>
-        </nav>
-    </div>
-</header>
+<aside th:fragment="side(active)" class="side">
+    <a class="brand" th:href="@{/lessons}">Учебный центр<small>расписание</small></a>
+    <nav class="menu" aria-label="Разделы">
+        <a class="menu-item" th:href="@{/lessons}" th:classappend="${active == 'lessons'} ? 'is-active'">
+            Расписание <span class="count" th:text="${navCounts['lessons']}"></span></a>
+        <a class="menu-item" th:href="@{/students}" th:classappend="${active == 'students'} ? 'is-active'">
+            Ученики <span class="count" th:text="${navCounts['students']}"></span></a>
+        <a class="menu-item" th:href="@{/tutors}" th:classappend="${active == 'tutors'} ? 'is-active'">
+            Репетиторы <span class="count" th:text="${navCounts['tutors']}"></span></a>
+        <a class="menu-item" th:href="@{/subjects}" th:classappend="${active == 'subjects'} ? 'is-active'">
+            Предметы <span class="count" th:text="${navCounts['subjects']}"></span></a>
+        <a class="menu-item" th:href="@{/report}" th:classappend="${active == 'report'} ? 'is-active'">Отчёт</a>
+    </nav>
+    <p class="side-foot">Панель администратора. Занятия без накладок по времени, отчёт для расчёта с репетиторами.</p>
+</aside>
 
 <div th:fragment="messages">
-    <p class="msg msg-error" th:if="${error}" th:text="${error}"></p>
-    <p class="msg msg-success" th:if="${success}" th:text="${success}"></p>
+    <p class="msg msg-error" role="alert" th:if="${error}" th:text="${error}"></p>
+    <p class="msg msg-success" role="status" th:if="${success}" th:text="${success}"></p>
 </div>
+
+<!-- Icon: Lucide "search", lucide-static v0.469.0, ISC license (https://lucide.dev) -->
+<svg th:fragment="icon-search" class="icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+     fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <circle cx="11" cy="11" r="8"/>
+    <path d="m21 21-4.3-4.3"/>
+</svg>
 
 </body>
 </html>

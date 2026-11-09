@@ -2,24 +2,27 @@
 <html lang="ru" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{fragments :: head('Отчёт')}"></head>
 <body>
-<header th:replace="~{fragments :: nav('report')}"></header>
-<main>
-    <h1>Отчёт по репетиторам</h1>
-    <p class="hint">Учитываются только проведённые занятия. Репетиторы без занятий тоже показаны (LEFT JOIN).</p>
+<div class="app">
+    <aside th:replace="~{fragments :: side('report')}"></aside>
 
-    <p class="empty" th:if="${#lists.isEmpty(rows)}">Репетиторов пока нет.</p>
-    <div class="table-wrap" th:unless="${#lists.isEmpty(rows)}">
-        <table>
-            <thead><tr><th>Репетитор</th><th>Проведено занятий</th><th>Заработано</th></tr></thead>
-            <tbody>
-            <tr th:each="r : ${rows}">
-                <td th:text="${r.tutorName}">Нурлан</td>
-                <td th:text="${r.doneLessons}">3</td>
-                <td th:text="${r.earnedSom} + ' сом'">2400 сом</td>
-            </tr>
-            </tbody>
-        </table>
-    </div>
-</main>
+    <main class="main">
+        <div class="page-head"><h1>Отчёт по репетиторам</h1></div>
+        <p class="hint">Считаются только проведённые занятия. Репетиторы без занятий тоже в списке.</p>
+
+        <p class="empty" th:if="${#lists.isEmpty(rows)}">Репетиторов пока нет.</p>
+        <div class="table-wrap" th:unless="${#lists.isEmpty(rows)}">
+            <table>
+                <thead><tr><th>Репетитор</th><th class="num">Проведено занятий</th><th class="num">К оплате</th></tr></thead>
+                <tbody>
+                <tr th:each="r : ${rows}">
+                    <td th:text="${r.tutorName}">Гульмира</td>
+                    <td class="num" th:text="${r.doneLessons}">3</td>
+                    <td class="num" th:text="${r.earnedSom} + ' сом'">3000 сом</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+</div>
 </body>
 </html>
