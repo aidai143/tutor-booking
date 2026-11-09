@@ -10,12 +10,15 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public class StudentDao {
 
     // PostgreSQL error code for "UNIQUE constraint violated"
     private static final String UNIQUE_VIOLATION = "23505";
+    // PostgreSQL error code for "row is still referenced by a foreign key"
+    private static final String FOREIGN_KEY_VIOLATION = "23503";
 
     private final DataSource dataSource;
 
@@ -35,6 +38,19 @@ public class StudentDao {
             return students;
         } catch (SQLException e) {
             throw new DatabaseException("Не удалось загрузить список учеников", e);
+        }
+    }
+
+    public Optional<Student> findById(int id) {
+        String sql = "SELECT id, name, phone, grade FROM students WHERE id = ?";
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setInt(1, id);
+            try (ResultSet rows = statement.executeQuery()) {
+                return rows.next() ? Optional.of(toStudent(rows)) : Optional.empty();
+            }
+        } catch (SQLException e) {
+            throw new DatabaseException("Не удалось найти ученика", e);
         }
     }
 
@@ -66,6 +82,9 @@ public class StudentDao {
             statement.executeUpdate();
 
         } catch (SQLException e) {
+            if (FOREIGN_KEY_VIOLATION.equals(e.getSQLState())) {
+                throw new IllegalArgumentException("Нельзя удалить ученика: у него есть занятия");
+            }
             throw new DatabaseException("Не удалось удалить ученика", e);
         }
     }

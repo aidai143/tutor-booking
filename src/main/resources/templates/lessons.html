@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head('Занятия')}"></head>
+<body>
+<header th:replace="~{fragments :: nav('lessons')}"></header>
+<main>
+    <h1>Занятия</h1>
+    <div th:replace="~{fragments :: messages}"></div>
+
+    <div class="card" th:if="${#lists.isEmpty(students) or #lists.isEmpty(tutors) or #lists.isEmpty(subjects)}">
+        <p>Чтобы записать на занятие, сначала добавьте хотя бы одного
+            <a th:href="@{/students}">ученика</a>, <a th:href="@{/tutors}">репетитора</a>
+            и <a th:href="@{/subjects}">предмет</a>.</p>
+    </div>
+
+    <form class="card form" method="post" th:action="@{/lessons}"
+          th:unless="${#lists.isEmpty(students) or #lists.isEmpty(tutors) or #lists.isEmpty(subjects)}">
+        <h2>Записать на занятие</h2>
+        <label>Ученик
+            <select name="studentId" required>
+                <option th:each="s : ${students}" th:value="${s.id}" th:text="${s.name + ', ' + s.grade + ' класс'}"></option>
+            </select>
+        </label>
+        <label>Репетитор
+            <select name="tutorId" required>
+                <option th:each="t : ${tutors}" th:value="${t.id}" th:text="${t}"></option>
+            </select>
+        </label>
+        <label>Предмет
+            <select name="subjectId" required>
+                <option th:each="s : ${subjects}" th:value="${s.id}" th:text="${s.name}"></option>
+            </select>
+        </label>
+        <label>Дата и время <input name="startsAt" type="datetime-local" required></label>
+        <fieldset>
+            <legend>Формат</legend>
+            <label class="inline"><input type="radio" name="type" value="ONLINE" checked> Онлайн (ставка)</label>
+            <label class="inline"><input type="radio" name="type" value="OFFLINE"> Офлайн (ставка + 200 сом за дорогу)</label>
+        </fieldset>
+        <label>Ссылка на звонок (онлайн) или адрес (офлайн)
+            <input name="location" maxlength="200" required>
+        </label>
+        <button type="submit">Записать</button>
+    </form>
+
+    <form class="search" method="get" th:action="@{/lessons}">
+        <input name="q" th:value="${q}" placeholder="Поиск по имени ученика">
+        <button type="submit">Найти</button>
+        <a th:if="${q}" th:href="@{/lessons}">Сбросить</a>
+    </form>
+
+    <p class="empty" th:if="${#lists.isEmpty(lessons)}"
+       th:text="${q} ? 'Ничего не найдено.' : 'Занятий пока нет.'">Занятий пока нет.</p>
+    <div class="table-wrap" th:unless="${#lists.isEmpty(lessons)}">
+        <table>
+            <thead>
+            <tr><th>Когда</th><th>Ученик</th><th>Репетитор</th><th>Предмет</th><th>Формат</th>
+                <th>Где</th><th>Цена</th><th>Статус</th><th></th></tr>
+            </thead>
+            <tbody>
+            <tr th:each="l : ${lessons}">
+                <td th:text="${#temporals.format(l.startsAt, 'dd.MM.yyyy HH:mm')}">12.11.2026 15:00</td>
+                <td th:text="${l.student.name}">Айгерим</td>
+                <td th:text="${l.tutor.name}">Нурлан</td>
+                <td th:text="${l.subject.name}">Математика</td>
+                <td th:text="${l.typeTitle}">Онлайн</td>
+                <td class="wrap" th:text="${l.location}">meet.google.com/abc</td>
+                <td th:text="${l.priceSom} + ' сом'">800 сом</td>
+                <td><span class="status" th:classappend="${'status-' + l.status.name().toLowerCase()}"
+                          th:text="${l.status.title}">Запланировано</span></td>
+                <td class="actions">
+                    <th:block th:if="${l.status.name() == 'BOOKED'}">
+                        <form method="post" th:action="@{/lessons/{id}/done(id=${l.id})}">
+                            <button type="submit">Проведено</button>
+                        </form>
+                        <form method="post" th:action="@{/lessons/{id}/cancel(id=${l.id})}">
+                            <button class="danger" type="submit">Отменить</button>
+                        </form>
+                    </th:block>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</main>
+</body>
+</html>

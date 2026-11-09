@@ -1,0 +1,65 @@
+@startuml
+skinparam classAttributeIconSize 0
+
+class Student {
+  -id: Integer
+  -name: String
+  -phone: String
+  -grade: int
+}
+class Tutor {
+  -id: Integer
+  -name: String
+  -phone: String
+  -hourlyRateSom: int
+}
+class Subject {
+  -id: Integer
+  -name: String
+}
+abstract class Lesson {
+  -id: Integer
+  -startsAt: LocalDateTime
+  -location: String
+  -status: LessonStatus
+  +{abstract} getPriceSom(): int
+  +{abstract} getType(): String
+}
+class OnlineLesson {
+  +getPriceSom(): int
+}
+class OfflineLesson {
+  +TRAVEL_FEE_SOM: int = 200
+  +getPriceSom(): int
+}
+enum LessonStatus {
+  BOOKED
+  DONE
+  CANCELLED
+}
+class LessonFactory {
+  +{static} create(type, student, tutor, subject, startsAt, location): Lesson
+}
+class LessonService {
+  +book(...): Lesson
+  +markDone(id)
+  +cancel(id)
+}
+class LessonDao
+class StudentDao
+class TutorDao
+class SubjectDao
+
+Lesson <|-- OnlineLesson
+Lesson <|-- OfflineLesson
+Lesson "*" --> "1" Student
+Lesson "*" --> "1" Tutor
+Lesson "*" --> "1" Subject
+Lesson --> LessonStatus
+LessonFactory ..> Lesson : creates
+LessonService ..> LessonFactory
+LessonService ..> LessonDao
+LessonService ..> StudentDao
+LessonService ..> TutorDao
+LessonService ..> SubjectDao
+@enduml

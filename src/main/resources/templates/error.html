@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head('Ошибка')}"></head>
+<body>
+<header th:replace="~{fragments :: nav('')}"></header>
+<main>
+    <h1>Что-то пошло не так</h1>
+    <p class="msg msg-error" th:text="${status == 404} ? 'Такой страницы нет.' : 'Ошибка на сервере. Проверьте, запущена ли база данных.'">
+        Ошибка на сервере.</p>
+    <p><a th:href="@{/lessons}">Вернуться к занятиям</a></p>
+</main>
+</body>
+</html>

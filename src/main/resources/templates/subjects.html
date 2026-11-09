@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head('Предметы')}"></head>
+<body>
+<header th:replace="~{fragments :: nav('subjects')}"></header>
+<main>
+    <h1>Предметы</h1>
+    <div th:replace="~{fragments :: messages}"></div>
+
+    <form class="card form" method="post" th:action="@{/subjects}">
+        <h2>Добавить предмет</h2>
+        <label>Название <input name="name" maxlength="100" required></label>
+        <button type="submit">Добавить</button>
+    </form>
+
+    <p class="empty" th:if="${#lists.isEmpty(subjects)}">Предметов пока нет.</p>
+    <div class="table-wrap" th:unless="${#lists.isEmpty(subjects)}">
+        <table>
+            <thead><tr><th>№</th><th>Название</th><th></th></tr></thead>
+            <tbody>
+            <tr th:each="s : ${subjects}">
+                <td th:text="${s.id}">1</td>
+                <td th:text="${s.name}">Математика</td>
+                <td>
+                    <form method="post" th:action="@{/subjects/{id}/delete(id=${s.id})}">
+                        <button class="danger" type="submit">Удалить</button>
+                    </form>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</main>
+</body>
+</html>

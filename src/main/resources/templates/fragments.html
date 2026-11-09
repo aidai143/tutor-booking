@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head th:fragment="head(title)">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="${title} + ' — Запись к репетитору'">Запись к репетитору</title>
+    <link rel="stylesheet" th:href="@{/style.css}">
+</head>
+<body>
+
+<header th:fragment="nav(active)" class="topbar">
+    <div class="topbar-inner">
+        <a class="brand" th:href="@{/lessons}">Запись к репетитору</a>
+        <nav>
+            <a th:href="@{/lessons}" th:classappend="${active == 'lessons'} ? 'active'">Занятия</a>
+            <a th:href="@{/students}" th:classappend="${active == 'students'} ? 'active'">Ученики</a>
+            <a th:href="@{/tutors}" th:classappend="${active == 'tutors'} ? 'active'">Репетиторы</a>
+            <a th:href="@{/subjects}" th:classappend="${active == 'subjects'} ? 'active'">Предметы</a>
+            <a th:href="@{/report}" th:classappend="${active == 'report'} ? 'active'">Отчёт</a>
+        </nav>
+    </div>
+</header>
+
+<div th:fragment="messages">
+    <p class="msg msg-error" th:if="${error}" th:text="${error}"></p>
+    <p class="msg msg-success" th:if="${success}" th:text="${success}"></p>
+</div>
+
+</body>
+</html>

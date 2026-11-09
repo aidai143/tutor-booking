@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head('Репетиторы')}"></head>
+<body>
+<header th:replace="~{fragments :: nav('tutors')}"></header>
+<main>
+    <h1>Репетиторы</h1>
+    <div th:replace="~{fragments :: messages}"></div>
+
+    <form class="card form" method="post" th:action="@{/tutors}">
+        <h2>Добавить репетитора</h2>
+        <label>Имя <input name="name" maxlength="100" required></label>
+        <label>Телефон <input name="phone" maxlength="20" placeholder="+996555123456" required></label>
+        <label>Ставка, сом/час <input name="hourlyRateSom" type="number" min="1" required></label>
+        <button type="submit">Добавить</button>
+    </form>
+
+    <p class="empty" th:if="${#lists.isEmpty(tutors)}">Репетиторов пока нет.</p>
+    <div class="table-wrap" th:unless="${#lists.isEmpty(tutors)}">
+        <table>
+            <thead><tr><th>№</th><th>Имя</th><th>Телефон</th><th>Ставка</th><th></th></tr></thead>
+            <tbody>
+            <tr th:each="t : ${tutors}">
+                <td th:text="${t.id}">1</td>
+                <td th:text="${t.name}">Нурлан</td>
+                <td th:text="${t.phone}">+996555123456</td>
+                <td th:text="${t.hourlyRateSom} + ' сом/час'">800 сом/час</td>
+                <td>
+                    <form method="post" th:action="@{/tutors/{id}/delete(id=${t.id})}">
+                        <button class="danger" type="submit">Удалить</button>
+                    </form>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</main>
+</body>
+</html>

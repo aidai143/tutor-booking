@@ -11,6 +11,24 @@ services:
     volumes:
       # data lives in a named volume, so it survives container restarts
       - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d tutor_db"]
+      interval: 3s
+      retries: 20
+
+  app:
+    build: .
+    environment:
+      # inside Docker the database is reached by its service name "db", not localhost
+      DB_HOST: db
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
 
 volumes:
   pgdata:
