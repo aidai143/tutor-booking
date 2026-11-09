@@ -1,0 +1,66 @@
+package kg.alatoo.tutorbooking.dao;
+
+import kg.alatoo.tutorbooking.model.Student;
+import org.springframework.stereotype.Repository;
+
+import javax.sql.DataSource;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+
+@Repository
+public class StudentDao {
+
+    // PostgreSQL error code for "UNIQUE constraint violated"
+    private static final String UNIQUE_VIOLATION = "23505";
+
+    private final DataSource dataSource;
+
+    public StudentDao(DataSource dataSource) {
+        this.dataSource = dataSource;
+    }
+
+    public List<Student> findAll() {
+        String sql = "SELECT id, name, phone, grade FROM students ORDER BY name";
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql);
+             ResultSet rows = statement.executeQuery()) {
+            List<Student> students = new ArrayList<>();
+            while (rows.next()) {
+                students.add(toStudent(rows));
+            }
+            return students;
+        } catch (SQLException e) {
+            throw new DatabaseException("Не удалось загрузить список учеников", e);
+        }
+    }
+
+    public Student save(Student student) {
+        String sql = "INSERT INTO students (name, phone, grade) VALUES (?, ?, ?) RETURNING id";
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, student.getName());
+            statement.setString(2, student.getPhone());
+            statement.setInt(3, student.getGrade());
+            try (ResultSet rows = statement.executeQuery()) {
+                rows.next();
+                student.setId(rows.getInt("id"));
+            }
+            return student;
+        } catch (SQLException e) {
+            if (UNIQUE_VIOLATION.equals(e.getSQLState())) {
+                throw new IllegalArgumentException("Ученик с телефоном " + student.getPhone() + " уже есть");
+            }
+            throw new DatabaseException("Не удалось сохранить ученика", e);
+        }
+    }
+
+    private Student toStudent(ResultSet row) throws SQLException {
+        Student student = new Student(row.getString("name"), row.getString("phone"), row.getInt("grade"));
+        student.setId(row.getInt("id"));
+        return student;
+    }
+}
