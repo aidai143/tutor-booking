@@ -5,6 +5,9 @@
 <header th:replace="~{fragments :: nav('lessons')}"></header>
 <main>
     <h1>Занятия</h1>
+    <p class="lead">Панель администратора учебного центра. Записывайте учеников на занятия —
+        система не даст поставить двум занятиям одного репетитора или ученика одно время.
+        В <a th:href="@{/report}">отчёте</a> видно, сколько занятий провёл каждый репетитор и сколько ему заплатить.</p>
     <div th:replace="~{fragments :: messages}"></div>
 
     <div class="card" th:if="${#lists.isEmpty(students) or #lists.isEmpty(tutors) or #lists.isEmpty(subjects)}">

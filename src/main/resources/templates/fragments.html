@@ -3,14 +3,14 @@
 <head th:fragment="head(title)">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title th:text="${title} + ' — Запись к репетитору'">Запись к репетитору</title>
+    <title th:text="${title} + ' — Учебный центр'">Учебный центр</title>
     <link rel="stylesheet" th:href="@{/style.css}">
 </head>
 <body>
 
 <header th:fragment="nav(active)" class="topbar">
     <div class="topbar-inner">
-        <a class="brand" th:href="@{/lessons}">Запись к репетитору</a>
+        <a class="brand" th:href="@{/lessons}">Учебный центр <span class="brand-sub">расписание</span></a>
         <nav>
             <a th:href="@{/lessons}" th:classappend="${active == 'lessons'} ? 'active'">Занятия</a>
             <a th:href="@{/students}" th:classappend="${active == 'students'} ? 'active'">Ученики</a>
