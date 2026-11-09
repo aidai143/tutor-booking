@@ -3,7 +3,7 @@
 <head th:replace="~{fragments :: head('Ошибка')}"></head>
 <body>
 <div class="app">
-    <aside th:replace="~{fragments :: side('')}"></aside>
+    <th:block th:if="${currentUser}"><aside th:replace="~{fragments :: side('')}"></aside></th:block>
 
     <main class="main">
         <div class="toolbar"><h1 th:text="${status == 404} ? 'Такой страницы нет' : 'Что-то пошло не так'">Что-то пошло не так</h1></div>
